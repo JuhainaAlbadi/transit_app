@@ -51,6 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
         _departures = departures;
         _isLoading = false;
       });
+      _notifyDelays(departures);
     } catch (e) {
       setState(() {
         _error = 'Could not load departures. Check your connection.';
@@ -59,20 +60,36 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _notifyDelays(List<Departure> departures) {
+    final delayed = departures.where((d) => d.delay != '0').toList();
+    if (delayed.isEmpty || !mounted) return;
+
+    final names = delayed.map((d) => d.station).join(', ');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.red[700],
+        duration: const Duration(seconds: 4),
+        content: Text(
+          '${delayed.length} delay${delayed.length > 1 ? 's' : ''}: $names',
+          style: const TextStyle(color: Colors.white),
+        ),
+      ),
+    );
+  }
+
   String _formatTime(String timestamp) {
-    final date = DateTime.fromMillisecondsSinceEpoch(int.parse(timestamp) * 1000);
+    final date =
+        DateTime.fromMillisecondsSinceEpoch(int.parse(timestamp) * 1000);
     return '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: const Text('AI Public Transport Assistant',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        backgroundColor: Colors.blue[900],
-        foregroundColor: Colors.white,
+            style: TextStyle(fontSize: 16)),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -83,7 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: Column(
         children: [
           Container(
-            color: Colors.blue[800],
+            color: cs.primary,
             padding: const EdgeInsets.all(12),
             child: Column(
               children: [
@@ -102,13 +119,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Center(
-                            child: Text('🇴🇲 Oman (Mwasalat)',
-                                style: TextStyle(
-                                    color: _useOman
-                                        ? Colors.blue[900]
-                                        : Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13)),
+                            child: Text(
+                              '🇴🇲 Oman (Mwasalat)',
+                              style: TextStyle(
+                                color: _useOman ? cs.primary : Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -127,13 +145,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Center(
-                            child: Text('🇧🇪 Belgium (IRAIL)',
-                                style: TextStyle(
-                                    color: !_useOman
-                                        ? Colors.blue[900]
-                                        : Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13)),
+                            child: Text(
+                              '🇧🇪 Belgium (IRAIL)',
+                              style: TextStyle(
+                                color: !_useOman ? cs.primary : Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -144,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 _useOman
                     ? DropdownButtonFormField<String>(
                         value: _selectedOmanStation,
-                        dropdownColor: Colors.blue[800],
+                        dropdownColor: cs.primary,
                         style: const TextStyle(color: Colors.white),
                         decoration: const InputDecoration(
                           labelText: 'Select Omani Station',
@@ -157,8 +176,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             .map((s) => DropdownMenuItem(
                                 value: s,
                                 child: Text(s,
-                                    style:
-                                        const TextStyle(color: Colors.white))))
+                                    style: const TextStyle(color: Colors.white))))
                             .toList(),
                         onChanged: (value) {
                           setState(() => _selectedOmanStation = value!);
@@ -167,7 +185,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       )
                     : DropdownButtonFormField<String>(
                         value: _selectedBelgianStation,
-                        dropdownColor: Colors.blue[800],
+                        dropdownColor: cs.primary,
                         style: const TextStyle(color: Colors.white),
                         decoration: const InputDecoration(
                           labelText: 'Select Belgian Station',
@@ -180,8 +198,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             .map((s) => DropdownMenuItem(
                                 value: s,
                                 child: Text(s,
-                                    style:
-                                        const TextStyle(color: Colors.white))))
+                                    style: const TextStyle(color: Colors.white))))
                             .toList(),
                         onChanged: (value) {
                           setState(() => _selectedBelgianStation = value!);
@@ -193,7 +210,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
+                ? Center(child: CircularProgressIndicator(color: cs.primary))
                 : _error.isNotEmpty
                     ? Center(
                         child: Text(_error,
@@ -208,11 +225,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             final delayed = d.delay != '0';
                             return Card(
                               margin: const EdgeInsets.only(bottom: 10),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12)),
                               child: ListTile(
                                 leading: CircleAvatar(
-                                  backgroundColor: Colors.blue[900],
+                                  backgroundColor: cs.primary,
                                   child: Text(d.track,
                                       style: const TextStyle(
                                           color: Colors.white, fontSize: 12)),
@@ -221,18 +236,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                     style: const TextStyle(
                                         fontWeight: FontWeight.bold)),
                                 subtitle: Text(
-                                    delayed
-                                        ? 'Delayed ${int.parse(d.delay) ~/ 60} min'
-                                        : 'On time',
-                                    style: TextStyle(
-                                        color: delayed
-                                            ? Colors.red
-                                            : Colors.green)),
-                                trailing: Text(_formatTime(d.time),
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.blue[900])),
+                                  delayed
+                                      ? 'Delayed ${int.parse(d.delay) ~/ 60} min'
+                                      : 'On time',
+                                  style: TextStyle(
+                                      color: delayed ? Colors.red : Colors.green),
+                                ),
+                                trailing: Text(
+                                  _formatTime(d.time),
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: cs.primary,
+                                  ),
+                                ),
                               ),
                             );
                           },

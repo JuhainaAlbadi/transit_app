@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'transit_tools.dart';
 
-class GeminiService {
+class ClaudeService {
   static const String _url = 'https://api.anthropic.com/v1/messages';
   static const String _model = 'claude-haiku-4-5-20251001';
   final TransitTools _tools = TransitTools();

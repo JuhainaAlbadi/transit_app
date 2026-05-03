@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/gemini_service.dart';
+import '../services/claude_service.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -9,7 +9,7 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  final GeminiService _gemini = GeminiService();
+  final ClaudeService _gemini = ClaudeService();
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   final List<Map<String, String>> _messages = [];
@@ -65,13 +65,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
-      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text('AI Assistant',
-            style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.blue[900],
-        foregroundColor: Colors.white,
+        title: const Text('AI Assistant'),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -99,7 +96,9 @@ class _ChatScreenState extends State<ChatScreen> {
                 final isConfident = msg['confident'] == 'true';
 
                 return Align(
-                  alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+                  alignment: isUser
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
                   child: Column(
                     crossAxisAlignment: isUser
                         ? CrossAxisAlignment.end
@@ -110,14 +109,15 @@ class _ChatScreenState extends State<ChatScreen> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 14, vertical: 10),
                         constraints: BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width * 0.75,
+                          maxWidth:
+                              MediaQuery.of(context).size.width * 0.75,
                         ),
                         decoration: BoxDecoration(
-                          color: isUser ? Colors.blue[900] : Colors.white,
+                          color: isUser ? cs.primary : cs.surface,
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
+                              color: Colors.black.withValues(alpha: 0.08),
                               blurRadius: 4,
                               offset: const Offset(0, 2),
                             )
@@ -126,14 +126,15 @@ class _ChatScreenState extends State<ChatScreen> {
                         child: Text(
                           msg['text'] ?? '',
                           style: TextStyle(
-                            color: isUser ? Colors.white : Colors.black87,
+                            color: isUser ? Colors.white : cs.onSurface,
                             fontSize: 14,
                           ),
                         ),
                       ),
                       if (!isUser)
                         Padding(
-                          padding: const EdgeInsets.only(left: 4, bottom: 8),
+                          padding:
+                              const EdgeInsets.only(left: 4, bottom: 8),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -142,15 +143,21 @@ class _ChatScreenState extends State<ChatScreen> {
                                 height: 8,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: isConfident ? Colors.green : Colors.orange,
+                                  color: isConfident
+                                      ? Colors.green
+                                      : Colors.orange,
                                 ),
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                isConfident ? 'High confidence' : 'May be outdated',
+                                isConfident
+                                    ? 'High confidence'
+                                    : 'May be outdated',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: isConfident ? Colors.green : Colors.orange,
+                                  color: isConfident
+                                      ? Colors.green
+                                      : Colors.orange,
                                 ),
                               ),
                             ],
@@ -164,30 +171,31 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
           if (_isLoading)
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               child: Row(
                 children: [
                   SizedBox(
                     width: 16,
                     height: 16,
                     child: CircularProgressIndicator(
-                        strokeWidth: 2, color: Colors.blue[900]),
+                        strokeWidth: 2, color: cs.primary),
                   ),
                   const SizedBox(width: 8),
                   Text('AI is thinking...',
-                      style: TextStyle(
-                          color: Colors.blue[900], fontSize: 13)),
+                      style:
+                          TextStyle(color: cs.primary, fontSize: 13)),
                 ],
               ),
             ),
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: cs.surface,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 4,
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 6,
                   offset: const Offset(0, -2),
                 )
               ],
@@ -197,6 +205,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 Expanded(
                   child: TextField(
                     controller: _controller,
+                    style: TextStyle(color: cs.onSurface),
                     decoration: InputDecoration(
                       hintText: 'Ask about delays, routes...',
                       border: OutlineInputBorder(
@@ -204,7 +213,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         borderSide: BorderSide.none,
                       ),
                       filled: true,
-                      fillColor: Colors.grey[100],
+                      fillColor: cs.surfaceContainerHighest,
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 10),
                     ),
@@ -213,9 +222,10 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 const SizedBox(width: 8),
                 CircleAvatar(
-                  backgroundColor: Colors.blue[900],
+                  backgroundColor: cs.primary,
                   child: IconButton(
-                    icon: const Icon(Icons.send, color: Colors.white, size: 18),
+                    icon: const Icon(Icons.send,
+                        color: Colors.white, size: 18),
                     onPressed: _sendMessage,
                   ),
                 ),

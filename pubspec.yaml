@@ -36,7 +36,12 @@ dependencies:
   sqflite: ^2.3.3
   path_provider: ^2.1.2
   path: ^1.9.0
-  google_generative_ai: ^0.4.6
+  share_plus: ^10.0.0
+  flutter_map: ^8.3.0
+  latlong2: ^0.9.1
+  geolocator: ^13.0.0
+  shared_preferences: ^2.2.3
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
